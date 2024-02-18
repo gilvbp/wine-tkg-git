@@ -314,10 +314,13 @@ function build_vkd3d {
   source "$_nowhere/proton_tkg_token"
   git clone https://github.com/HansKristian-Work/vkd3d-proton.git || true # It'll complain the path already exists on subsequent builds
   cd vkd3d-proton
-  git reset --hard HEAD
-  git clean -xdf
-  git pull origin master
+  # git reset --hard HEAD
+  # git clean -xdf
+
+ # git pull origin master
+  git checkout v2.11.1
   git submodule update --init --recursive
+  cd khronos/Vulkan-Headers && git checkout v1.3.274 && cd ../../
 
   if [ "$_bump_dxil_spirv" = "true" ]; then
     ( cd subprojects/dxil-spirv && git pull origin master )
@@ -368,12 +371,14 @@ function build_dxvk {
 
 function build_dxvk_nvapi {
   cd "$_nowhere"/Proton
-  git clone https://github.com/jp7677/dxvk-nvapi.git || true # It'll complain the path already exists on subsequent builds
+  git clone https://github.com/esullivan-nvidia/dxvk-nvapi.git || true # It'll complain the path already exists on subsequent builds
   cd dxvk-nvapi
-  git reset --hard HEAD
-  git clean -xdf
-  git pull origin master
+  git checkout nv_low_latency2
+  # git reset --hard HEAD
+  # git clean -xdf
+  # git pull origin master
   git submodule update --init --recursive
+  cd external/Vulkan-Headers && git checkout v1.3.274 && cd ../../
 
   rm -rf "$_nowhere"/Proton/build/lib64-dxvk-nvapi
   rm -rf "$_nowhere"/Proton/build/lib32-dxvk-nvapi
