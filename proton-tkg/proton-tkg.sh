@@ -314,7 +314,7 @@ function build_lsteamclient {
 function build_vkd3d {
   cd "$_nowhere"
   source "$_nowhere/proton_tkg_token"
-  git clone https://github.com/HansKristian-Work/vkd3d-proton.git || true # It'll complain the path already exists on subsequent builds
+  git clone https://github.com/gilvbp/vkd3d-proton.git || true # It'll complain the path already exists on subsequent builds
   cd vkd3d-proton
    git reset --hard HEAD
    git clean -xdf
