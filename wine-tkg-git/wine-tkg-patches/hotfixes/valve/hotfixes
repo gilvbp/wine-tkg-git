@@ -14,6 +14,16 @@ if [ "$_EXTERNAL_INSTALL" != "proton" ]; then
     elif [[ "$_LOCAL_PRESET" = valve-ex* ]]; then
       cp "$_where"/wine-tkg-patches/hotfixes/valve/de-steamify-80-be.mypatch "$_where"/
     fi
+  elif [[ "$_plain_version" = *_9.0 ]]; then
+    if [ "$_LOCAL_PRESET" = "valve" ]; then
+      cp "$_where"/wine-tkg-patches/hotfixes/valve/de-steamify-90.mypatch "$_where"/
+    elif [[ "$_LOCAL_PRESET" = valve-ex* ]]; then
+      cp "$_where"/wine-tkg-patches/hotfixes/valve/de-steamify-90.mypatch "$_where"/
+    fi
+    #if [ "$(_os_name)" = "ubuntu" ]; then
+    #  warning "Disabling mediaconv for buntu"
+    #  cp "$_where"/wine-tkg-patches/hotfixes/valve/fixes/buntu/disable_mediaconv.myrevert "$_where"/
+    #fi
   fi
 fi
 
@@ -50,6 +60,7 @@ if [ "$_use_staging" = "true" ]; then
                     -W server-File_Permissions \
                     -W server-Stored_ACLs \
                     -W eventfd_synchronization \
+                    -W d3dx9_36-BumpLuminance \
                     -W d3dx11_43-D3DX11CreateTextureFromMemory \
                     -W dbghelp-Debug_Symbols \
                     -W ddraw-Device_Caps \
@@ -80,6 +91,7 @@ if [ "$_use_staging" = "true" ]; then
                     -W kernel32-CopyFileEx \
                     -W shell32-Progress_Dialog \
                     -W shell32-ACE_Viewer \
+                    -W shell32-SHFileOperation_Move \
                     -W fltmgr.sys-FltBuildDefaultSecurityDescriptor \
                     -W inseng-Implementation \
                     -W ntdll-RtlQueryPackageIdentity \
@@ -108,6 +120,7 @@ if [ "$_use_staging" = "true" ]; then
                     -W user32-Mouse_Message_Hwnd \
                     -W winepulse-PulseAudio_Support \
                     -W d3dx9_36-D3DXStubs \
+                    -W d3dx9_36-DDS \
                     -W shell32-registry-lookup-app \
                     -W ntdll-ext4-case-folder)
   elif [[ "$_plain_version" = *_8.0 ]]; then
