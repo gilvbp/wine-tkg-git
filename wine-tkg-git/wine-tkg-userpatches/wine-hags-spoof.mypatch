@@ -1,17 +1,18 @@
+Subject: [PATCH] added wine_hags code (10.3 and above)
+
 diff --git a/dlls/win32u/d3dkmt.c b/dlls/win32u/d3dkmt.c
-index f4d695ac0cb..c489601e147 100644
---- a/dlls/win32u/d3dkmt.c
-+++ b/dlls/win32u/d3dkmt.c
-@@ -223,15 +223,48 @@ NTSTATUS WINAPI NtGdiDdDDIDestroyDevice( const D3DKMT_DESTROYDEVICE *desc )
+--- a/dlls/win32u/d3dkmt.c	(revision 4cb856a95de0d28947fe59a98296682a7444894e)
++++ b/dlls/win32u/d3dkmt.c	(date 1742136253461)
+@@ -327,45 +327,50 @@
+     free( found );
      return STATUS_SUCCESS;
  }
- 
+-
 +static BOOL check_hags_enabled( void )
 +{
 +    const char *winehags = getenv( "WINEHAGS" );
 +    return winehags && *winehags != '0';
 +}
-+
  /******************************************************************************
   *           NtGdiDdDDIQueryAdapterInfo    (win32u.@)
   */
@@ -19,18 +20,42 @@ index f4d695ac0cb..c489601e147 100644
  {
 +    D3DKMT_WDDM_2_7_CAPS *d3dkmt_wddm_2_7_caps;
 +
-     if (!desc) return STATUS_INVALID_PARAMETER;
+     TRACE( "(%p).\n", desc );
  
--    FIXME( "desc %p, type %d stub\n", desc, desc->Type );
--    return STATUS_NOT_IMPLEMENTED;
+     if (!desc || !desc->hAdapter || !desc->pPrivateDriverData)
+         return STATUS_INVALID_PARAMETER;
+ 
 +    TRACE("desc %p, type %d\n", desc, desc->Type);
 +
-+    switch (desc->Type)
-+    {
+     switch (desc->Type)
+     {
+-    case KMTQAITYPE_CHECKDRIVERUPDATESTATUS:
+-    {
+-        BOOL *value = desc->pPrivateDriverData;
+-
+-        if (desc->PrivateDriverDataSize < sizeof(*value))
+-            return STATUS_INVALID_PARAMETER;
+-
+-        *value = FALSE;
+-        return STATUS_SUCCESS;
+-    }
+-    case KMTQAITYPE_DRIVERVERSION:
+-    {
+-        D3DKMT_DRIVERVERSION *value = desc->pPrivateDriverData;
+-
+-        if (desc->PrivateDriverDataSize < sizeof(*value))
+-            return STATUS_INVALID_PARAMETER;
 +        case KMTQAITYPE_WDDM_2_7_CAPS:
 +            if (!desc->pPrivateDriverData || desc->PrivateDriverDataSize != sizeof(D3DKMT_WDDM_2_7_CAPS))
 +                return STATUS_INVALID_PARAMETER;
-+
+ 
+-        *value = KMT_DRIVERVERSION_WDDM_1_3;
+-        return STATUS_SUCCESS;
+-    }
+-    default:
+-    {
+-        FIXME( "type %d not handled.\n", desc->Type );
+-        return STATUS_NOT_IMPLEMENTED;
 +            d3dkmt_wddm_2_7_caps = desc->pPrivateDriverData;
 +            d3dkmt_wddm_2_7_caps->HwSchSupported = 1;
 +            d3dkmt_wddm_2_7_caps->HwSchEnabled = 0;
@@ -47,36 +72,64 @@ index f4d695ac0cb..c489601e147 100644
 +        default:
 +            FIXME("type %d not supported\n", desc->Type);
 +            return STATUS_NOT_IMPLEMENTED;
-+    }
+     }
+-    }
 +
 +    return STATUS_SUCCESS;
  }
  
  /******************************************************************************
+
 diff --git a/include/ddk/d3dkmthk.h b/include/ddk/d3dkmthk.h
-index 918a4ad..4b2c5a7 100644
---- a/include/ddk/d3dkmthk.h
-+++ b/include/ddk/d3dkmthk.h
-@@ -1260,6 +1260,22 @@ typedef struct _D3DKMT_QUERYRESOURCEINFOFROMNTHANDLE
+--- a/include/ddk/d3dkmthk.h	(revision 4cb856a95de0d28947fe59a98296682a7444894e)
++++ b/include/ddk/d3dkmthk.h	(date 1742136346893)
+@@ -1281,6 +1281,22 @@
      UINT NumAllocations;
  } D3DKMT_QUERYRESOURCEINFOFROMNTHANDLE;
  
 +typedef struct _D3DKMT_WDDM_2_7_CAPS
 +{
-+  union
-+  {
-+    struct
++    union
 +    {
-+      UINT HwSchSupported               :  1;
-+      UINT HwSchEnabled                 :  1;
-+      UINT HwSchEnabledByDefault        :  1;
-+      UINT IndependentVidPnVSyncControl :  1;
-+      UINT Reserved                     : 28;
++        struct
++        {
++            UINT HwSchSupported               :  1;
++            UINT HwSchEnabled                 :  1;
++            UINT HwSchEnabledByDefault        :  1;
++            UINT IndependentVidPnVSyncControl :  1;
++            UINT Reserved                     : 28;
++        };
++        UINT Value;
 +    };
-+    UINT Value;
-+  };
 +} D3DKMT_WDDM_2_7_CAPS;
 +
  #ifdef __cplusplus
  extern "C"
  {
+
+diff --git a/include/d3dkmdt.h b/include/d3dkmdt.h
+--- a/include/d3dkmdt.h	(revision 4cb856a95de0d28947fe59a98296682a7444894e)
++++ b/include/d3dkmdt.h	(date 1742136346873)
+@@ -146,22 +146,6 @@
+     };
+ } D3DKMT_WDDM_2_0_CAPS;
+ 
+-typedef struct _D3DKMT_WDDM_2_7_CAPS
+-{
+-    union
+-    {
+-        struct
+-        {
+-            UINT HwSchSupported               :  1;
+-            UINT HwSchEnabled                 :  1;
+-            UINT HwSchEnabledByDefault        :  1;
+-            UINT IndependentVidPnVSyncControl :  1;
+-            UINT Reserved                     : 28;
+-        };
+-        UINT Value;
+-    };
+-} D3DKMT_WDDM_2_7_CAPS;
+-
+ typedef struct _D3DKMT_WDDM_2_9_CAPS
+ {
+     union
