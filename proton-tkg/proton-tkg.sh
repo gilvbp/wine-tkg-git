@@ -373,8 +373,8 @@ function build_dxvk {
   cd "$_nowhere"
   git clone https://github.com/Frogging-Family/dxvk-tools.git || true # It'll complain the path already exists on subsequent builds
   cd dxvk-tools
-  git reset --hard HEAD
-  git clean -xdf
+  #git reset --hard HEAD
+  #git clean -xdf
   git pull origin master
 
   if [ -e "$_nowhere"/proton-tkg-userpatches/*.mydxvk* ]; then
