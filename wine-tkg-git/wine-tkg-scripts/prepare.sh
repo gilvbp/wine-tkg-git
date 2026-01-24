@@ -1111,7 +1111,15 @@ _polish() {
 	  tools/make_makefiles
 	fi
 
-	echo -e "\nRunning make_vulkan" >> "$_where"/prepare.log && dlls/winevulkan/make_vulkan >> "$_where"/prepare.log 2>&1
+	echo -e "\nRunning make_vulkan" >> "$_where"/prepare.log && dlls/winevulkan/make_vulkan -v >> "$_where"/prepare.log 2>&1
+	if [ "$_no_container" = "false" ] && [[ "$_custom_wine_source" != *"ValveSoftware"* ]]; then
+	  if ! cp -v $( ls -v "$HOME"/.cache/wine/vk-* | tail -n 1 ) "${srcdir}"/"${_winesrcdir}"/dlls/winevulkan/vk.xml; then
+	    warning "Cached vk.xml not found"
+	  fi
+	  if ! cp -v $( ls -v "$HOME"/.cache/wine/video-* | tail -n 1 ) "${srcdir}"/"${_winesrcdir}"/dlls/winevulkan/video.xml; then
+	    warning "Cached video.xml not found"
+	  fi
+	fi
 	tools/make_requests
 	if [ -e tools/make_specfiles ]; then
 	  tools/make_specfiles
